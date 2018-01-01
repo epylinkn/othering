@@ -13,8 +13,7 @@ const sketch = (p5) => {
   var serial;
   var key;
 
-  var randomImage = require('./assets/heart.svg');
-  var step = 0;
+  var step = 9;
   var clips;
   var clip1 = require('./assets/clip1.mp4');
   var clip2 = require('./assets/clip2.mp4');
@@ -132,8 +131,16 @@ const sketch = (p5) => {
     }
 
     function displayVideo(videoIndex) {
-      let verticalMargin = 80;
-      let horizontalMargin = 120;
+      // TODO get and keep video aspect ratio: 1280 x 720?
+      let videoWidth = 1280;
+      let videoHeight = 720;
+      let percentageWidth = .70;
+
+      let aspectRatio = videoWidth / videoHeight;
+      let horizontalMargin = p5.windowWidth * (1 - percentageWidth) / 2;
+      // TODO how do we formula this...
+      let verticalMargin = 100;
+
       p5.image(
         clips[videoIndex],
         horizontalMargin,
