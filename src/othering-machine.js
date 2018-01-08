@@ -13,7 +13,7 @@ const sketch = (p5) => {
   var serial;
   var key;
 
-  var step = 9;
+  var step = 0;
   var clips;
   var clip1 = require('./assets/clip1.mp4');
   var clip2 = require('./assets/clip2.mp4');
