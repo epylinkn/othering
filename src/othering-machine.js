@@ -46,17 +46,17 @@ const sketch = (p5) => {
   var fakeNewsTextSize;
   var fakeNewsVideo;
   var fakeNewsVideos = {
-    "vegans.illegal": require('./assets/fakenews/vegans.illegal.mov'),
-    "vegans.radical": require('./assets/fakenews/vegans.radical.mov'),
-    "vegans.militant": require("./assets/fakenews/vegans.militant.mov"),
+    "vegans.illegal": require('./assets/fakenews/vegans.illegal.mp4'),
+    "vegans.radical": require('./assets/fakenews/vegans.radical.mp4'),
+    "vegans.militant": require("./assets/fakenews/vegans.militant.mp4"),
 
-    "lefties.illegal": require("./assets/fakenews/lefties.illegal.mov"),
-    "lefties.radical": require("./assets/fakenews/lefties.radical.mov"),
-    "lefties.militant": require("./assets/fakenews/lefties.militant.mov"),
+    "lefties.illegal": require("./assets/fakenews/lefties.illegal.mp4"),
+    "lefties.radical": require("./assets/fakenews/lefties.radical.mp4"),
+    "lefties.militant": require("./assets/fakenews/lefties.militant.mp4"),
 
-    "beliebers.illegal": require("./assets/fakenews/beliebers.illegal.mov"),
-    "beliebers.radical": require("./assets/fakenews/beliebers.radical.mov"),
-    "beliebers.militant": require("./assets/fakenews/beliebers.militant.mov"),
+    "beliebers.illegal": require("./assets/fakenews/beliebers.illegal.mp4"),
+    "beliebers.radical": require("./assets/fakenews/beliebers.radical.mp4"),
+    "beliebers.militant": require("./assets/fakenews/beliebers.militant.mp4"),
   }
 
   var isSelectingGroup = false;
