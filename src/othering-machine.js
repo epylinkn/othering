@@ -43,6 +43,7 @@ const sketch = (p5) => {
 
   var narrativeOptions;
   var fakeNews;
+  var fakeNewsTextSize;
   var fakeNewsVideo;
   var fakeNewsVideos = {
     "vegans.illegal": require('./assets/fakenews/vegans.illegal.mov'),
@@ -67,6 +68,8 @@ const sketch = (p5) => {
   let groupOptions = ['vegans', 'lefties', 'beliebers'];
   var labelOptions = ['radical', 'illegal', 'militant'];
   var narratives;
+  var aspectWidth;
+  var aspectHeight;
 
   p5.preload = () => {
     bgTitle = p5.loadImage(require('./assets/bg-title.jpg'));
@@ -79,7 +82,17 @@ const sketch = (p5) => {
   }
 
   p5.setup = () => {
-    p5.createCanvas(p5.windowWidth, p5.windowHeight);
+    // lock the aspect ratio and maximize canvas size... because video
+    if (p5.windowWidth / p5.windowHeight > 16 / 9.0) {
+      aspectHeight = p5.windowHeight;
+      aspectWidth = p5.windowHeight * 16 / 9.0;
+    } else {
+      aspectWidth = p5.windowWidth;
+      aspectHeight = p5.windowWidth * 9 / 16.0;
+    }
+
+
+    p5.createCanvas(aspectWidth, aspectHeight);
 
     // console.dir(p5.SerialPort);
     // serial = new p5.SerialPort();
@@ -114,11 +127,11 @@ const sketch = (p5) => {
       p5.textFont("Roboto");
       p5.textSize(20);
       p5.textAlign(p5.CENTER);
-      p5.text(text, p5.windowWidth / 2, 100);
+      p5.text(text, aspectWidth / 2, 100);
     }
 
     function displayBackground(img) {
-      p5.image(img, 0, 0, p5.windowWidth, p5.windowHeight);
+      p5.image(img, 0, 0, aspectWidth, aspectHeight);
     }
 
     function displayTitle(text) {
@@ -127,199 +140,125 @@ const sketch = (p5) => {
       p5.textSize(40);
       p5.textStyle("BOLD");
       p5.textAlign(p5.CENTER);
-      p5.text(text, p5.windowWidth / 2, p5.windowHeight / 2);
+      p5.text(text, aspectWidth / 2, aspectHeight / 2);
     }
 
     function displayVideo(videoIndex) {
-      // TODO get and keep video aspect ratio: 1280 x 720?
+      // NOTE: keep video aspect ratio: 1280 x 720?
       let videoWidth = 1280;
       let videoHeight = 720;
-      let percentageWidth = .70;
 
-      let aspectRatio = videoWidth / videoHeight;
-      let horizontalMargin = p5.windowWidth * (1 - percentageWidth) / 2;
-      // TODO how do we formula this...
-      let verticalMargin = 100;
+      let percentageWidth = .70;
+      let scaledVideoWidth = aspectWidth * percentageWidth;
+      let scaledVideoHeight = aspectHeight * percentageWidth;
+
+      let horizontalMargin = (aspectWidth - scaledVideoWidth) / 2;
+      let verticalMargin = (aspectHeight - scaledVideoHeight) / 2;
 
       p5.image(
         clips[videoIndex],
         horizontalMargin,
         verticalMargin,
-        p5.windowWidth - 2 * horizontalMargin,
-        p5.windowHeight - 2 * verticalMargin
+        aspectWidth - 2 * horizontalMargin,
+        aspectHeight - 2 * verticalMargin
       );
     }
 
-    function displayFakeNewsSmall(key) {
-      let verticalMargin = 203;
-      let horizontalMargin = 322;
+    function calculateFakeNewsTextSize(narrative, maxWidth) {
+      if (fakeNewsTextSize !== undefined) {
+        return fakeNewsTextSize;
+      }
+
+      var i = 60;
+      p5.textSize(i);
+      for (; p5.textWidth(narrative) > maxWidth && i !== 0; i -= 2) {
+        p5.textSize(i);
+      }
+
+      fakeNewsTextSize = i;
+      return fakeNewsTextSize;
+    }
+
+    function displayFakeNews(key, small = false) {
+      // NOTE: alter video aspect ratio: 720 x 480
+      let videoWidth = 720;
+      let videoHeight = 480;
+      let videoAspectRatio = 16 / 9;
+
+      let percentSize = (small) ? .24 : .70;
+      let scaledVideoHeight = aspectHeight * percentSize;
+      let scaledVideoWidth = scaledVideoHeight * videoAspectRatio;
+
+      let horizontalMargin = (aspectWidth - scaledVideoWidth) / 2;
+      let verticalMargin = (aspectHeight - scaledVideoHeight) / 2;
+      let xmin, xmax, ymin, ymax;
 
       p5.image(
         fakeNewsVideo,
         horizontalMargin,
         verticalMargin,
-        p5.windowWidth - 2 * horizontalMargin,
-        p5.windowHeight - 2 * verticalMargin
+        aspectWidth - 2 * horizontalMargin,
+        aspectHeight - 2 * verticalMargin
       );
 
       if (key.indexOf("militant") > 0) {
-        p5.noStroke();
-        p5.fill("blue");
-        p5.rect(
-          horizontalMargin + 20,
-          p5.windowHeight - 2 * verticalMargin + 172,
-          p5.windowWidth - 2 * horizontalMargin - 20,
-          15
-        );
+        xmin = horizontalMargin;
+        xmax = scaledVideoWidth;
+        ymin = verticalMargin + scaledVideoHeight * 0.85;
+        ymax = scaledVideoHeight * 0.10;
 
-        p5.fill("white");
-        p5.textFont("Arial");
-        p5.textSize(9);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 20,
-          p5.windowHeight - 2 * verticalMargin + 172,
-          p5.windowWidth - 2 * horizontalMargin - 20,
-          15
-        );
+        // text background
+        p5.noStroke();
+        p5.fill("#ffffff");
+        p5.rect( xmin, ymin, xmax, ymax );
       } else if (key.indexOf("illegal") > 0) {
-        p5.noStroke();
-        p5.fill("blue");
-        p5.rect(
-          horizontalMargin + 41,
-          p5.windowHeight - 2 * verticalMargin + 172,
-          p5.windowWidth - 2 * horizontalMargin - 45,
-          12
-        );
+        xmin = horizontalMargin + scaledVideoWidth * 0.19;
+        xmax = scaledVideoWidth * 0.80;
+        ymin = verticalMargin + scaledVideoHeight * 0.75;
+        ymax = scaledVideoHeight * 0.10;
 
-        p5.fill("white");
-        p5.textFont("Arial");
-        p5.textSize(7);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 41,
-          p5.windowHeight - 2 * verticalMargin + 172,
-          p5.windowWidth - 2 * horizontalMargin - 45,
-          12
-        );
+        // text background
+        p5.noStroke();
+        p5.fill("#ffffff");
+        p5.rect( xmin, ymin, xmax, ymax );
       } else if (key.indexOf("radical") > 0) {
-        p5.noStroke();
-        p5.fill("#DDDDDD");
-        p5.rect(
-          horizontalMargin + 31,
-          p5.windowHeight - 2 * verticalMargin + 173,
-          p5.windowWidth - 2 * horizontalMargin - 46,
-          12
-        );
+        xmin = horizontalMargin + scaledVideoWidth * 0.16;
+        xmax = scaledVideoWidth * 0.775;
+        ymin = verticalMargin + scaledVideoHeight * 0.74;
+        ymax = scaledVideoHeight * 0.12;
 
-        p5.fill("black");
-        p5.textFont("Arial");
-        p5.textSize(8);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 31,
-          p5.windowHeight - 2 * verticalMargin + 173,
-          p5.windowWidth - 2 * horizontalMargin - 46,
-          12
-        );
+        // text background
+        p5.noStroke();
+        p5.fill("#fff");
+        p5.rect( xmin, ymin, xmax, ymax );
+
       }
-    }
 
-    function displayFakeNews(key) {
-      let verticalMargin = 75;
-      let horizontalMargin = 100;
+      // fake headline
+      let narrative = fakeNews[`${key}.${narrativeSelection}`];
+      p5.fill("black");
+      p5.textFont("Arial");
+      p5.textStyle("BOLD");
+      p5.textAlign(p5.CENTER, p5.CENTER);
 
-      p5.image(
-        fakeNewsVideo,
-        horizontalMargin,
-        verticalMargin,
-        p5.windowWidth - 2 * horizontalMargin,
-        p5.windowHeight - 2 * verticalMargin
-      );
-
-      if (key.indexOf("militant") > 0) {
-        p5.noStroke();
-        p5.fill("blue");
-        p5.rect(
-          horizontalMargin + 100,
-          p5.windowHeight - 2 * verticalMargin,
-          p5.windowWidth - 2 * horizontalMargin - 100,
-          50
-        );
-
-        p5.fill("white");
-        p5.textFont("Arial");
-        p5.textSize(28);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 100,
-          p5.windowHeight - 2 * verticalMargin,
-          p5.windowWidth - 2 * horizontalMargin - 100,
-          50
-        );
-      } else if (key.indexOf("illegal") > 0) {
-        p5.noStroke();
-        p5.fill("blue");
-        p5.rect(
-          horizontalMargin + 125,
-          p5.windowHeight - 2 * verticalMargin - 20,
-          p5.windowWidth - 2 * horizontalMargin - 135,
-          38
-        );
-
-        p5.fill("white");
-        p5.textFont("Arial");
-        p5.textSize(24);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 125,
-          p5.windowHeight - 2 * verticalMargin - 20,
-          p5.windowWidth - 2 * horizontalMargin - 135,
-          38
-        );
-      } else if (key.indexOf("radical") > 0) {
-        p5.noStroke();
-        p5.fill("#DDDDDD");
-        p5.rect(
-          horizontalMargin + 105,
-          p5.windowHeight - 2 * verticalMargin - 23,
-          p5.windowWidth - 2 * horizontalMargin - 150,
-          43
-        );
-
-        p5.fill("black");
-        p5.textFont("Arial");
-        p5.textSize(24);
-        p5.textStyle("BOLD");
-        p5.textAlign(p5.CENTER, p5.CENTER);
-        p5.text(
-          fakeNews[`${key}.${narrativeSelection}`],
-          horizontalMargin + 105,
-          p5.windowHeight - 2 * verticalMargin - 23,
-          p5.windowWidth - 2 * horizontalMargin - 150,
-          43
-        );
+      // dynamic font sizing
+      if (small) {
+        p5.textSize(calculateFakeNewsTextSize(narrative, xmax) * .24 / .70);
+      } else {
+        p5.textSize(calculateFakeNewsTextSize(narrative, xmax));
       }
+
+      p5.text( narrative, xmin, ymin, xmax, ymax );
     }
 
     function displayOption(text, i, width, active) {
       if (active) {
         p5.fill(color);
-        p5.rect(i * width, p5.windowHeight - 100, width, 100);
+        p5.rect(i * width, aspectHeight - 100, width, 100);
         p5.fill("black");
       } else {
         p5.fill("black");
-        p5.rect(i * width, p5.windowHeight - 100, width, 100);
+        p5.rect(i * width, aspectHeight - 100, width, 100);
         p5.fill("white");
       }
 
@@ -327,7 +266,7 @@ const sketch = (p5) => {
       p5.textSize(32);
       p5.textStyle("BOLD");
       p5.textAlign(p5.CENTER, p5.CENTER);
-      p5.text(_.upperCase(text), i * width, p5.windowHeight - 100, width, 100);
+      p5.text(_.upperCase(text), i * width, aspectHeight - 100, width, 100);
     }
 
     switch(step) {
@@ -385,7 +324,7 @@ const sketch = (p5) => {
         displayTitle("SELECT A TARGET GROUP");
 
         length = groupOptions.length;
-        width = p5.windowWidth / length;
+        width = aspectWidth / length;
         for (var i = 0; i < length; i++) {
           displayOption(groupOptions[i], i, width, i+1 === groupSelection)
         }
@@ -421,7 +360,7 @@ const sketch = (p5) => {
         displayTitle("SELECT A LABEL");
 
         length = labelOptions.length;
-        width = p5.windowWidth / length;
+        width = aspectWidth / length;
         for (var i = 0; i < length; i++) {
           displayOption(labelOptions[i], i, width, i+1 === labelSelection);
         }
@@ -456,7 +395,7 @@ const sketch = (p5) => {
 
         narratives = narrativeOptions[`${groupOptions[groupSelection-1]}.${labelOptions[labelSelection-1]}`];
         length = narratives.length;
-        width = p5.windowWidth / length;
+        width = aspectWidth / length;
         for (var i = 0; i < length; i++) {
           let active = i+1 === narrativeSelection;
           if (active) {
@@ -464,7 +403,7 @@ const sketch = (p5) => {
           } else {
             p5.fill("black");
           }
-          p5.rect(i * width, 0, width, p5.windowHeight);
+          p5.rect(i * width, 0, width, aspectHeight);
 
           if (active) {
             p5.fill("black");
@@ -475,7 +414,7 @@ const sketch = (p5) => {
           p5.textSize(24);
           p5.textStyle("BOLD");
           p5.textAlign(p5.CENTER, p5.CENTER);
-          p5.text(narratives[i], i * width + 20, 0, width - 40, p5.windowHeight);
+          p5.text(narratives[i], i * width + 20, 0, width - 40, aspectHeight);
         }
 
         break;
@@ -570,7 +509,7 @@ const sketch = (p5) => {
         }
 
         displayVideo("clipGrid");
-        displayFakeNewsSmall(key);
+        displayFakeNews(key, true);
 
 
         if (fakeNewsVideo.time() >= fakeNewsVideo.duration()) {
