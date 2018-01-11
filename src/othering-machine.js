@@ -117,7 +117,7 @@ const sketch = (p5) => {
       clipDone: p5.createVideo([clipDone])
     }
 
-    _.mapValues(clips, (clip) => { clip.hide() });
+    _.mapValues(clips, (clip) => { clip.elt.preload = "metadata"; clip.hide() });
   }
 
   p5.draw = () => {
